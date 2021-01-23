@@ -1,0 +1,14 @@
+# Read more about SSH config files: https://linux.die.net/man/5/ssh_config
+Host subcom
+    User allied-admin
+    HostName pwsh.link
+    Port 10001
+    PasswordAuthentication no
+    IdentitiesOnly yes
+    IdentityFile C:\Users\JGrote\.ssh\JGroteADSL1020.pub
+
+Host tinycloud
+    HostName tinycloud.us.to
+
+Host *
+    User jgrote

@@ -1,0 +1,81 @@
+add_newline = true
+
+format = """
+$username\
+$hostname\
+$shlvl\
+$kubernetes\
+$directory\
+$git_branch\
+$git_commit\
+$git_state\
+$git_status\
+$hg_branch\
+$docker_context\
+$package\
+$cmake\
+$dart\
+$dotnet\
+$elixir\
+$elm\
+$erlang\
+$golang\
+$helm\
+$java\
+$julia\
+$kotlin\
+$nim\
+$nodejs\
+$ocaml\
+$perl\
+$php\
+$purescript\
+$python\
+$ruby\
+$rust\
+$swift\
+$terraform\
+$zig\
+$nix_shell\
+$conda\
+$memory_usage\
+$aws\
+$gcloud\
+$openstack\
+$crystal\
+$custom\
+$cmd_duration\
+$line_break\
+$lua\
+$jobs\
+$battery\
+$time\
+$status\
+$env_var\
+$character"""
+
+[env_var]
+style = "bg:#FFA500"
+format = "[$env_value]($style)"
+variable = "STARSHIP_ENVVAR"
+
+[battery]
+disabled = true
+
+[character]
+success_symbol = "[❯](green)"
+vicmd_symbol = "[❮](green)"
+error_symbol = "💥[❯](green)"
+
+[git_branch]
+style = "cyan bold"
+
+[directory]
+style = "bg:#333333 white"
+format = "[$path]($style)[$read_only]($read_only_style)[](fg:#333333) "
+truncate_to_repo = false
+
+[directory.substitutions]
+"~/Projects" = "🚧"
+"~/Documents" = "📄"
+"~" = "🏠"
