@@ -1,0 +1,5 @@
+{{ if eq .chezmoi.os "windows" }}
+.config/powershell
+{{ end }}
+
+!Documents/Powershell/profile.ps1
