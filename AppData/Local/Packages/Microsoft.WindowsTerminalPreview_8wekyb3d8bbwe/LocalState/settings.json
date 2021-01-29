@@ -1,0 +1,225 @@
+{
+  "$schema": "https://aka.ms/terminal-profiles-schema",
+  "alwaysShowTabs": true,
+  "copyFormatting": true,
+  "copyOnSelect": true,
+  "multiLinePasteWarning": false,
+  "largePasteWarning": false,
+  "defaultProfile": "{574e775e-4f2a-5b96-ac1e-a2962a402336}",
+  "keybindings": [
+    {
+      "command": {
+        "action": "copy",
+        "singleLine": false
+      },
+      "keys": "ctrl+c"
+    },
+    {
+      "command": "paste",
+      "keys": "ctrl+v"
+    },
+    {
+      "command": "find",
+      "keys": "ctrl+shift+f"
+    },
+    {
+      "command": {
+        "action": "splitPane",
+        "split": "auto",
+        "splitMode": "duplicate"
+      },
+      "keys": "alt+shift+d"
+    }
+  ],
+  "showTerminalTitleInTitlebar": true,
+  "tabWidthMode": "titleLength",
+  "profiles": {
+    "defaults": {
+      "acrylicOpacity": 0.8,
+      "backgroundImageAlignment": "bottomRight",
+      "backgroundImageOpacity": 0.5,
+      "backgroundImageStretchMode": "none",
+      "colorScheme": "Dark Plus",
+      "fontFace": "Delugia Nerd Font",
+      "fontSize": 12,
+      "startingDirectory": "%USERPROFILE%",
+      "suppressApplicationTitle": true,
+      "tabTitle": " ",
+      "useAcrylic": true
+    },
+    "list": [
+      {
+        "guid": "{574e775e-4f2a-5b96-ac1e-a2962a402336}",
+        "name": "PowerShell",
+        "backgroundImage": "ms-appdata:///roaming/pwsh-pulse.gif",
+        "commandline": "pwsh.exe -nologo -noexit",
+        "hidden": false,
+        "icon": "ms-appdata:///roaming/pwsh.png",
+        "source": "Windows.Terminal.PowershellCore",
+        "useAcrylic": false
+      },      
+      {
+        "guid": "{61c54bbd-c2c6-5271-96e7-009a87ffaaaa}",
+        "name": "Powershell Preview",
+        "background": "#0E0419",
+        "backgroundImage": "ms-appdata:///roaming/pwshpreview-pulse.gif",
+        "commandline": "pwsh-preview.cmd -noexit -nologo",
+        "icon": "ms-appdata:///roaming/pwsh-preview.png"
+      },
+      {
+        "guid": "{61c54bbd-c2c6-5271-96e7-009a87ff44bf}",
+        "name": "Windows PowerShell",
+        "colorScheme": "Campbell Powershell",
+        "commandline": "powershell.exe -nologo",
+        "hidden": false
+      },
+      {
+        "guid": "{b4531262-4e3d-5e58-b989-0a998ec441ff}",
+        "name": "SSH",
+        "backgroundImage": "ms-appdata:///roaming/ssh.png",
+        "commandline": "pwsh -noprofile -c \"$hn = Read-Host '[User@]Hostname';cls;ssh.exe $hn;write-host -fore green 'Press any key to close the window';[void][System.Console]::ReadKey($true)\"",
+        "icon": "ms-appdata:///roaming/ssh.png"
+      },
+      {
+        "guid": "{2c4de342-38b7-51cf-b940-2309a097f518}",
+        "name": "Ubuntu",
+        "background": "#2C001E",
+        "backgroundImage": "ms-appdata:///roaming/wsl-pulse.gif",
+        "hidden": false,
+        "icon": "ms-appdata:///roaming/ubuntu.png",
+        "source": "Windows.Terminal.Wsl"
+      },
+      {
+        "guid": "{b453ae62-4e3d-5e58-b989-0a998ec441b8}",
+        "name": "Azure Cloud Shell",
+        "background": "#000033",
+        "backgroundImage": "ms-appdata:///roaming/cloudshell-pulse.gif",
+        "hidden": false,
+        "source": "Windows.Terminal.Azure"
+      },
+      {
+        "guid": "{b453ae62-4e3d-5e58-b989-0a998ec441a4}",
+        "name": "Powershell Remoting (SSH)",
+        "backgroundImage": "ms-appdata:///roaming/psremotingbg.png",
+        "commandline": "pwsh -noprofile -c \"$hn = Read-Host '[User@]Hostname';cls;etsn -SSHTransport $hn;write-host -fore green 'Press any key to close the window';[void][System.Console]::ReadKey($true)\"",
+        "icon": "ms-appdata:///roaming/psremoting.png"
+      },
+      {
+        "guid": "{1777cdf0-b2c4-5a63-a204-eb60f349ea7c}",
+        "name": "Alpine",
+        "background": "#18474e",
+        "backgroundImage": "ms-appdata:///roaming/wsl-pulse.gif",
+        "hidden": false,
+        "icon": "ms-appdata:///roaming/wsl.png",
+        "source": "Windows.Terminal.Wsl"
+      },
+      {
+        "guid": "{07b52e3e-de2c-5db4-bd2d-ba144ed6c273}",
+        "name": "Ubuntu-20.04",
+        "background": "#4d0034",
+        "backgroundImage": "ms-appdata:///roaming/wsl-pulse.gif",
+        "hidden": false,
+        "icon": "ms-appdata:///roaming/ubuntu-server.png",
+        "source": "Windows.Terminal.Wsl"
+      },
+      {
+        "guid": "{c6eaf9f4-32a7-5fdc-b5cf-066e8a4b1e40}",
+        "name": "Ubuntu-18.04",
+        "background": "#4d0034",
+        "backgroundImage": "ms-appdata:///roaming/wsl-pulse.gif",
+        "hidden": false,
+        "icon": "ms-appdata:///roaming/ubuntu-server.png",
+        "source": "Windows.Terminal.Wsl"
+      },
+      {
+        "guid": "{0caa0dad-35be-5f56-a8ff-afceeeaa6101}",
+        "name": "cmd",
+        "backgroundImage": "ms-appdata:///roaming/cmd-pulse.gif",
+        "colorScheme": "Campbell",
+        "commandline": "cmd.exe /K",
+        "fontSize": 10,
+        "hidden": false
+      },
+      {
+        "guid": "{fe66f4b8-350f-56bb-adb0-c2ce745f6db5}",
+        "hidden": false,
+        "name": "PowerShell (scoop)",
+        "source": "Windows.Terminal.PowershellCore"
+      },
+      {
+        "guid": "{a3a2e83a-884a-5379-baa8-16f193a13b21}",
+        "hidden": false,
+        "name": "PowerShell 7 Preview",
+        "source": "Windows.Terminal.PowershellCore"
+      },
+      {
+        "guid": "{2595cd9c-8f05-55ff-a1d4-93f3041ca67f}",
+        "hidden": false,
+        "name": "PowerShell Preview (msix)",
+        "source": "Windows.Terminal.PowershellCore"
+      },
+      {
+        "guid": "{63e31163-583f-5850-9c1e-24e227dd2da9}",
+        "hidden": false,
+        "name": "PowerShell (dotnet global)",
+        "source": "Windows.Terminal.PowershellCore"
+      },
+      {
+        "guid": "{5fb123f1-af88-5b5c-8953-d14a8def1978}",
+        "hidden": false,
+        "name": "PowerShell 7",
+        "source": "Windows.Terminal.PowershellCore"
+      },
+      {
+          "guid": "{58ad8b0c-3ef8-5f4d-bc6f-13e4c00f2530}",
+          "hidden": false,
+          "name": "Debian",
+          "source": "Windows.Terminal.Wsl"
+      }
+    ]
+  },
+  "schemes": [
+    {
+      "background": "#1E1E1E",
+      "black": "#000000",
+      "blue": "#2472C8",
+      "brightBlack": "#666666",
+      "brightBlue": "#569CD6",
+      "brightCyan": "#9CDCFE",
+      "brightGreen": "#B5CEA8",
+      "brightPurple": "#DAADD6",
+      "brightRed": "#F14C4C",
+      "brightWhite": "#E5E5E5",
+      "brightYellow": "#DCDCAA",
+      "cyan": "#11A8CD",
+      "foreground": "#D4D4D4",
+      "green": "#6A9955",
+      "name": "Dark Plus",
+      "purple": "#C586C0",
+      "red": "#CD3131",
+      "white": "#E5E5E5",
+      "yellow": "#CE9178"
+    },
+    {
+      "background": "#141E43",
+      "black": "#000000",
+      "blue": "#338F86",
+      "brightBlack": "#3F5648",
+      "brightBlue": "#23D7D7",
+      "brightCyan": "#00EDE1",
+      "brightGreen": "#74CD68",
+      "brightPurple": "#FF37FF",
+      "brightRed": "#FF3242",
+      "brightWhite": "#FFFFFF",
+      "brightYellow": "#FFB929",
+      "cyan": "#23D7D7",
+      "foreground": "#E1E1E1",
+      "green": "#74AF68",
+      "name": "Pandora",
+      "purple": "#9414E6",
+      "red": "#FF4242",
+      "white": "#E2E2E2",
+      "yellow": "#FFAD29"
+    }
+  ]
+}
