@@ -9,8 +9,10 @@ Set-PSReadLineOption -MaximumHistoryCount 32767 #-HistorySavePath "$([environmen
 # Set-PSReadLineKeyHandler -Key "Ctrl+f" -Function ForwardWord
 
 #Set editor to VSCode if present
-if (Get-Command code -ErrorAction SilentlyContinue) {
+if (Get-Command code -Type Application -ErrorAction SilentlyContinue) {
     $ENV:EDITOR='code'
+} elseif (Get-Command nano -Type Application -ErrorAction SilentlyContinue) {
+    $ENV:EDITOR='nano'
 }
 
 Set-PSReadLineKeyHandler -Description 'Edit current directory with Visual Studio Code' -Chord Ctrl+Shift+e -ScriptBlock {
@@ -94,10 +96,12 @@ if ($env:WT_SESSION) {
 # checkpoint WTSession
 
 #region Integrations
-Set-Alias tf (Get-Command terraform -All -ErrorAction SilentlyContinue | Where-Object { $PSItem -notmatch 'ps1' })
-Set-Alias pul (Get-Command pulumi -All -ErrorAction SilentlyContinue | Where-Object { $PSItem -notmatch 'ps1' })
+$tf = Get-Command terraform -Type Application -ErrorAction SilentlyContinue
+if ($tf) {Set-Alias tf $tf.name}
+$pul = Get-Command pulumi -Type Application -ErrorAction SilentlyContinue
+if ($pul) {Set-Alias pul $pul.name}
 
-if (Get-Command scoop-search -CommandType Application -ea silentlycontinue) { Invoke-Expression (&scoop-search --hook) }
+if (Get-Command scoop-search -Type Application -ErrorAction SilentlyContinue) { Invoke-Expression (&scoop-search --hook) }
 
 #endregion Integrations
 Function cicommit { git commit --amend --no-edit;git push -f }
