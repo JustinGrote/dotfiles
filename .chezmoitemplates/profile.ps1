@@ -1,5 +1,30 @@
 #requires -version 5
+
+#region Checkpoint
 $showPromptCheckpoint = $false
+# function Checkpoint ($CheckpointName, [Switch]$AsWriteHost,[Switch]$Reset) {
+#     if ($Reset) {
+#         $SCRIPT:checkpointStartTime = [datetime]::now
+#     }
+#     if (-not $SCRIPT:processStartTime) {
+#         $SCRIPT:processStartTime = (Get-Process -Id $pid).starttime
+#         $SCRIPT:checkpointStartTime = [datetime]::now
+#         [int]$cp = ($checkpointStartTime - $processStartTime).totalmilliseconds
+#     } else {
+#         [int]$cp = ([datetime]::now - $checkpointStartTime).totalmilliseconds
+#     }
+
+#     if ($showPromptCheckpoint) {
+#         $debugpreference = 'Continue'
+#         $message = "$([char]27)[95m${cp}ms: $CheckpointName$([char]27)[0m"
+#         if ($AsWriteHost) {
+#             Write-Host -Fore Magenta $Message
+#         } else {
+#             Write-Debug $Message -Verbose
+#         }
+#     }
+# }
+#endregion Checkpoint
 
 #region EditorStuff
 if ((Get-Module PSReadLine).version -ge '2.1.0') {
@@ -42,28 +67,6 @@ if (
 #endregion CredentialDefaults
 
 
-# function Checkpoint ($CheckpointName, [Switch]$AsWriteHost,[Switch]$Reset) {
-#     if ($Reset) {
-#         $SCRIPT:checkpointStartTime = [datetime]::now
-#     }
-#     if (-not $SCRIPT:processStartTime) {
-#         $SCRIPT:processStartTime = (Get-Process -Id $pid).starttime
-#         $SCRIPT:checkpointStartTime = [datetime]::now
-#         [int]$cp = ($checkpointStartTime - $processStartTime).totalmilliseconds
-#     } else {
-#         [int]$cp = ([datetime]::now - $checkpointStartTime).totalmilliseconds
-#     }
-
-#     if ($showPromptCheckpoint) {
-#         $debugpreference = 'Continue'
-#         $message = "$([char]27)[95m${cp}ms: $CheckpointName$([char]27)[0m"
-#         if ($AsWriteHost) {
-#             Write-Host -Fore Magenta $Message
-#         } else {
-#             Write-Debug $Message -Verbose
-#         }
-#     }
-# }
 
 #region VSCodeTheme
 if ($env:TERM_PROGRAM -eq 'VSCode' -or $env:WT_SESSION) {
