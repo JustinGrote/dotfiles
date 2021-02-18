@@ -24,6 +24,23 @@ Set-PSReadLineKeyHandler -Description 'Edit current directory with Visual Studio
 }
 #endregion EditorStuff
 
+#region CredentialDefaults
+$CredentialVaultName = 'PSDefaultCredentials'
+if (
+    Get-Command Get-Secret -Module 'Microsoft.Powershell.SecretManagement' -ErrorAction SilentlyContinue
+    -and Get-SecretVault 'PSDefaultCredentials' -ErrorAction SilentlyContinue
+) {
+    @{
+        'Publish-Module:NuGetApiKey' = $(Get-Secret -Name 'PSGalleryApiKey' -Vault 'PSDefaultCredentials' -asplaintext)
+        'Publish-PSResource:ApiKey' = $(Get-Secret -Name 'PSGalleryApiKey' -Vault 'PSDefaultCredentials' -asplaintext)
+        'Connect-PRTGServer:Credential' = $(Get-Secret -Name 'PRTGDefault' -Vault 'PSDefaultCredentials')
+        'Connect-VIServer:Credential' = $(Get-Secret -Name 'VMAdmin' -Vault 'PSDefaultCredentials')
+    }.GetEnumerator().Foreach{
+        $PSDefaultCredentials[$PSItem.Name] = $PSItem.Value
+    }
+}
+#endregion CredentialDefaults
+
 
 # function Checkpoint ($CheckpointName, [Switch]$AsWriteHost,[Switch]$Reset) {
 #     if ($Reset) {
