@@ -52,8 +52,8 @@ Set-PSReadLineKeyHandler -Description 'Edit current directory with Visual Studio
 #region CredentialDefaults
 $CredentialVaultName = 'PSDefaultCredentials'
 if (
-    Get-Command Get-Secret -Module 'Microsoft.Powershell.SecretManagement' -ErrorAction SilentlyContinue
-    -and Get-SecretVault 'PSDefaultCredentials' -ErrorAction SilentlyContinue
+    (Get-Command Get-Secret -Module 'Microsoft.Powershell.SecretManagement' -ErrorAction SilentlyContinue) -and 
+    (Get-SecretVault 'PSDefaultCredentials' -ErrorAction SilentlyContinue)
 ) {
     @{
         'Publish-Module:NuGetApiKey' = $(Get-Secret -Name 'PSGalleryApiKey' -Vault 'PSDefaultCredentials' -asplaintext)
