@@ -1,5 +1,7 @@
 #requires -version 5
 $showPromptCheckpoint = $false
+
+#region EditorStuff
 if ((Get-Module PSReadLine).version -ge '2.1.0') {
     Set-PSReadLineOption -PredictionSource History
     Set-PSReadLineKeyHandler -Key UpArrow -Function HistorySearchBackward
@@ -8,7 +10,7 @@ if ((Get-Module PSReadLine).version -ge '2.1.0') {
 Set-PSReadLineOption -MaximumHistoryCount 32767 #-HistorySavePath "$([environment]::GetFolderPath('ApplicationData'))\Microsoft\Windows\PowerShell\PSReadLine\history.txt"
 # Set-PSReadLineKeyHandler -Key "Ctrl+f" -Function ForwardWord
 
-#Set editor to VSCode if present
+#Set editor to VSCode or nano if present
 if (Get-Command code -Type Application -ErrorAction SilentlyContinue) {
     $ENV:EDITOR='code'
 } elseif (Get-Command nano -Type Application -ErrorAction SilentlyContinue) {
@@ -20,6 +22,7 @@ Set-PSReadLineKeyHandler -Description 'Edit current directory with Visual Studio
         code .
     }
 }
+#endregion EditorStuff
 
 
 # function Checkpoint ($CheckpointName, [Switch]$AsWriteHost,[Switch]$Reset) {
@@ -45,7 +48,7 @@ Set-PSReadLineKeyHandler -Description 'Edit current directory with Visual Studio
 #     }
 # }
 
-#VSCode Specific Theming
+#region VSCodeTheme
 if ($env:TERM_PROGRAM -eq 'VSCode' -or $env:WT_SESSION) {
     if ($psedition -eq 'core') {
         $e = "`e"
@@ -84,27 +87,35 @@ if ($env:TERM_PROGRAM -eq 'VSCode' -or $env:WT_SESSION) {
     $host.PrivateData.VerboseForegroundColor = 'Cyan'
     $host.PrivateData.WarningBackgroundColor = 'Black'
     $host.PrivateData.WarningForegroundColor = 'DarkYellow'
+
+    if ($env:WT_SESSION) {
+        [Console]::Title = ''
+    } else {
+        [Console]::Title = "Powershell $($PSVersionTable.PSVersion.Major)"
+    }
 }
-# checkpoint vscode
+#endregion VSCodeTheme
 
 #Set Window Title to icon-only for Windows Terminal, otherwise display Powershell version
-if ($env:WT_SESSION) {
-    [Console]::Title = ''
-} else {
-    [Console]::Title = "Powershell $($PSVersionTable.PSVersion.Major)"
-}
+
 # checkpoint WTSession
 
-#region Integrations
-$tf = Get-Command terraform -Type Application -ErrorAction SilentlyContinue
-if ($tf) {Set-Alias tf $tf.name}
-$pul = Get-Command pulumi -Type Application -ErrorAction SilentlyContinue
-if ($pul) {Set-Alias pul $pul.name}
+#region ShortHands
+$shortHands = @{
+    terraform = 'tf'
+    pulumi = 'pul'
+    kubectl = 'k'
+}
+$shorthands.keys.Foreach{
+    if (Get-Command $PSItem -Type Application -ErrorAction SilentlyContinue) {
+        Set-Alias -Name $shortHands.$PSItem -Value $PSItem 
+    }
+}
+#endregion Shorthands
 
-if (Get-Command scoop-search -Type Application -ErrorAction SilentlyContinue) { Invoke-Expression (&scoop-search --hook) }
+#region Helpers
 
-#endregion Integrations
-Function cicommit { git commit --amend --no-edit;git push -f }
+function cicommit { git commit --amend --no-edit;git push -f }
 
 function bounceCode { Get-Process code* | Stop-Process;code }
 
@@ -114,18 +125,6 @@ function testprompt {
     Import-Module "$HOME\Projects\PowerPrompt\PowerPrompt\PowerPrompt.psd1" -Force
     Get-PowerPromptDefaultTheme
 }
-
-#Force TLS 1.2 for all connections
-if ($PSEdition -eq 'Desktop') {
-    [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
-}
-
-#Enable concise errorview for PS7 and up
-if ($psversiontable.psversion.major -ge 7) {
-    $ErrorView = 'ConciseView'
-}
-
-#region Helpers
 
 function Invoke-WebScript {
     param (
@@ -142,11 +141,27 @@ function starshipc {
     #>
     Invoke-Expression ((starship completions powershell) -join "`n")
 }
+
 #endregion Helpers
 
 
 
+#region Integrations
 
+#Scoop Fast Search Integration
+if (Get-Command scoop-search -Type Application -ErrorAction SilentlyContinue) { Invoke-Expression (&scoop-search --hook) }
+
+#Force TLS 1.2 for all connections
+if ($PSEdition -eq 'Desktop') {
+    [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
+}
+
+#Enable concise errorview for PS7 and up
+if ($psversiontable.psversion.major -ge 7) {
+    $ErrorView = 'ConciseView'
+}
+
+#Starship Prompt
 if (Get-Command starship -CommandType Application -ErrorAction SilentlyContinue) {
     #Separate Prompt for vscode. We don't use the profile so this works for both integrated and external terminal modes
     if ($ENV:VSCODE_GIT_IPC_HANDLE) {
@@ -169,13 +184,11 @@ if (Get-Command starship -CommandType Application -ErrorAction SilentlyContinue)
     if ($starshipPrompt -notmatch 'STARSHIP_ENVVAR') {Write-Error 'Starship shimming failed, check $profile'}
 
     . ([ScriptBlock]::create($starshipPrompt))
+    if ((Get-Module PSReadline).Version -ge '2.1.0') {
+        Set-PSReadLineOption -PromptText "`e[32m❯ ", '❯ '
+    }
 }
-
-
-if ((Get-Module PSReadline).Version -ge '2.1.0') {
-    Set-PSReadLineOption -PromptText "`e[32m❯ ", '❯ '
-}
-
+#endregion Integrations
 
 #Powershell 5.1 helper for emojis
 # function Get-Unicode ([String[]]$UnicodeChars) {
