@@ -53,20 +53,18 @@ Set-PSReadLineKeyHandler -Description 'Edit current directory with Visual Studio
 $CredentialVaultName = 'PSDefaultCredentials'
 if (
     (Get-Command Get-Secret -Module 'Microsoft.Powershell.SecretManagement' -ErrorAction SilentlyContinue) -and 
-    (Get-SecretVault 'PSDefaultCredentials' -ErrorAction SilentlyContinue)
+    (Get-SecretVault $CredentialVaultName -ErrorAction SilentlyContinue)
 ) {
     @{
-        'Publish-Module:NuGetApiKey' = $(Get-Secret -Name 'PSGalleryApiKey' -Vault 'PSDefaultCredentials' -asplaintext)
-        'Publish-PSResource:ApiKey' = $(Get-Secret -Name 'PSGalleryApiKey' -Vault 'PSDefaultCredentials' -asplaintext)
-        'Connect-PRTGServer:Credential' = $(Get-Secret -Name 'PRTGDefault' -Vault 'PSDefaultCredentials')
-        'Connect-VIServer:Credential' = $(Get-Secret -Name 'VMAdmin' -Vault 'PSDefaultCredentials')
+        'Publish-Module:NuGetApiKey' = $(Get-Secret -Name 'PSGalleryApiKey' -Vault $CredentialVaultName -asplaintext)
+        'Publish-PSResource:ApiKey' = $(Get-Secret -Name 'PSGalleryApiKey' -Vault $CredentialVaultName -asplaintext)
+        'Connect-PRTGServer:Credential' = $(Get-Secret -Name 'PRTGDefault' -Vault $CredentialVaultName)
+        'Connect-VIServer:Credential' = $(Get-Secret -Name 'VMAdmin' -Vault $CredentialVaultName)
     }.GetEnumerator().Foreach{
         $PSDefaultCredentials[$PSItem.Name] = $PSItem.Value
     }
 }
 #endregion CredentialDefaults
-
-
 
 #region VSCodeTheme
 if ($env:TERM_PROGRAM -eq 'VSCode' -or $env:WT_SESSION) {
@@ -116,10 +114,6 @@ if ($env:TERM_PROGRAM -eq 'VSCode' -or $env:WT_SESSION) {
 }
 #endregion VSCodeTheme
 
-#Set Window Title to icon-only for Windows Terminal, otherwise display Powershell version
-
-# checkpoint WTSession
-
 #region ShortHands
 $shortHands = @{
     terraform = 'tf'
@@ -164,8 +158,6 @@ function starshipc {
 
 #endregion Helpers
 
-
-
 #region Integrations
 
 #Scoop Fast Search Integration
@@ -209,15 +201,3 @@ if (Get-Command starship -CommandType Application -ErrorAction SilentlyContinue)
     }
 }
 #endregion Integrations
-
-#Powershell 5.1 helper for emojis
-# function Get-Unicode ([String[]]$UnicodeChars) {
-#     $result = New-Object Text.StringBuilder
-#     $UnicodeChars.Split(' ').foreach{
-#         $char = [Char]::ConvertFromUtf32(
-#             [Convert]::ToInt32(($PSItem -replace '^U\+'),16)
-#         )
-#         $result.append($char) > $null
-#     }
-#     [String]$result
-# }
