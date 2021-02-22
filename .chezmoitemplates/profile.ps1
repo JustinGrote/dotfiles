@@ -37,7 +37,7 @@ Set-PSReadLineOption -MaximumHistoryCount 32767 #-HistorySavePath "$([environmen
 
 #Set editor to VSCode or nano if present
 if (Get-Command code -Type Application -ErrorAction SilentlyContinue) {
-    $ENV:EDITOR='code'
+    $ENV:EDITOR='code --wait'
 } elseif (Get-Command nano -Type Application -ErrorAction SilentlyContinue) {
     $ENV:EDITOR='nano'
 }
