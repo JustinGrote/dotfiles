@@ -329,6 +329,11 @@ if ($psversiontable.psversion.major -ge 7) {
     $ErrorView = 'ConciseView'
 }
 
+#Enable AzPredictor if present
+if ((Get-Module psreadline).Version -gt 2.1.99 -and (Get-Command 'Enable-AzPredictor' -ErrorAction SilentlyContinue)) {
+    Enable-AzPredictor
+}
+
 #Enable new fancy progress bar
 if ($psversiontable.psversion.major -ge '7.2.0') {
     Enable-ExperimentalFeature PSAnsiProgress,PSAnsiRendering -WarningAction SilentlyContinue
