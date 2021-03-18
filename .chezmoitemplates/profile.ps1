@@ -1,3 +1,5 @@
+using namespace System.Management.Automation
+using namespace System.Management.Automation.Language
 #requires -version 5
 
 #region Checkpoint
@@ -27,19 +29,178 @@ $showPromptCheckpoint = $false
 #endregion Checkpoint
 
 #region EditorStuff
-if ((Get-Module PSReadLine).version -ge '2.1.0') {
+$HistorySavePath = Join-Path (Split-Path (Get-PSReadLineOption).HistorySavePath) 'history.txt'
+Set-PSReadLineOption -HistorySavePath $HistorySavePath
+
+$PSReadlineVersion = (Get-Module PSReadLine).version
+
+if ($PSReadlineVersion -ge '2.1.0') {
     Set-PSReadLineOption -PredictionSource History
     Set-PSReadLineKeyHandler -Key UpArrow -Function HistorySearchBackward
     Set-PSReadLineKeyHandler -Key DownArrow -Function HistorySearchForward
+    Set-PSReadLineKeyHandler -Key 'Alt+RightArrow' -Function 'AcceptNextSuggestionWord'
 }
-Set-PSReadLineOption -MaximumHistoryCount 32767 #-HistorySavePath "$([environment]::GetFolderPath('ApplicationData'))\Microsoft\Windows\PowerShell\PSReadLine\history.txt"
-# Set-PSReadLineKeyHandler -Key "Ctrl+f" -Function ForwardWord
+
+# Stolen and modified from https://github.com/PowerShell/PSReadLine/blob/master/PSReadLine/SamplePSReadLineProfile.ps1
+# F1 for help on the command line - naturally
+Set-PSReadLineKeyHandler -Key F1 `
+    -BriefDescription CommandHelp `
+    -LongDescription 'Open the help window for the current command' `
+    -ScriptBlock {
+    param($key, $arg)
+
+    $ast = $null
+    $tokens = $null
+    $errors = $null
+    $cursor = $null
+    [Microsoft.PowerShell.PSConsoleReadLine]::GetBufferState([ref]$ast, [ref]$tokens, [ref]$errors, [ref]$cursor)
+
+    $commandAst = $ast.FindAll( {
+            $node = $args[0]
+            $node -is [CommandAst] -and
+            $node.Extent.StartOffset -le $cursor -and
+            $node.Extent.EndOffset -ge $cursor
+        }, $true) | Select-Object -Last 1
+
+    if ($commandAst -ne $null) {
+        $commandName = $commandAst.GetCommandName()
+        if ($commandName -ne $null) {
+            $command = $ExecutionContext.InvokeCommand.GetCommand($commandName, 'All')
+            if ($command -is [Management.Automation.AliasInfo]) {
+                $commandName = $command.ResolvedCommandName
+            }
+
+            if ($commandName -ne $null) {
+                #First try online
+                try {
+                    Get-Help $commandName -Online -ErrorAction Stop
+                } catch [InvalidOperationException] {
+                    if ($PSItem -notmatch 'The online version of this Help topic cannot be displayed') {throw}
+                    Get-Help $CommandName -ShowWindow
+                }
+            }
+        }
+    }
+}
+
+# Insert text from the clipboard as a here string
+Set-PSReadLineKeyHandler -Key Ctrl+Alt+V `
+                         -BriefDescription PasteAsHereString `
+                         -LongDescription "Paste the clipboard text as a here string" `
+                         -ScriptBlock {
+    param($key, $arg)
+
+    Add-Type -Assembly PresentationCore
+    if ([System.Windows.Clipboard]::ContainsText())
+    {
+        # Get clipboard text - remove trailing spaces, convert \r\n to \n, and remove the final \n.
+        $text = ([System.Windows.Clipboard]::GetText() -replace "\p{Zs}*`r?`n","`n").TrimEnd()
+        [Microsoft.PowerShell.PSConsoleReadLine]::Insert("@'`n$text`n'@")
+    }
+    else
+    {
+        [Microsoft.PowerShell.PSConsoleReadLine]::Ding()
+    }
+}
+
+# Sometimes you want to get a property of invoke a member on what you've entered so far
+# but you need parens to do that.  This binding will help by putting parens around the current selection,
+# or if nothing is selected, the whole line.
+Set-PSReadLineKeyHandler -Key 'Alt+(' `
+                         -BriefDescription ParenthesizeSelection `
+                         -LongDescription "Put parenthesis around the selection or entire line and move the cursor to after the closing parenthesis" `
+                         -ScriptBlock {
+    param($key, $arg)
+
+    $selectionStart = $null
+    $selectionLength = $null
+    [Microsoft.PowerShell.PSConsoleReadLine]::GetSelectionState([ref]$selectionStart, [ref]$selectionLength)
+
+    $line = $null
+    $cursor = $null
+    [Microsoft.PowerShell.PSConsoleReadLine]::GetBufferState([ref]$line, [ref]$cursor)
+    if ($selectionStart -ne -1)
+    {
+        [Microsoft.PowerShell.PSConsoleReadLine]::Replace($selectionStart, $selectionLength, '(' + $line.SubString($selectionStart, $selectionLength) + ')')
+        [Microsoft.PowerShell.PSConsoleReadLine]::SetCursorPosition($selectionStart + $selectionLength + 2)
+    }
+    else
+    {
+        [Microsoft.PowerShell.PSConsoleReadLine]::Replace(0, $line.Length, '(' + $line + ')')
+        [Microsoft.PowerShell.PSConsoleReadLine]::EndOfLine()
+    }
+}
+
+
+# Each time you press Alt+', this key handler will change the token
+# under or before the cursor.  It will cycle through single quotes, double quotes, or
+# no quotes each time it is invoked.
+Set-PSReadLineKeyHandler -Key "Alt+'" `
+                         -BriefDescription ToggleQuoteArgument `
+                         -LongDescription "Toggle quotes on the argument under the cursor" `
+                         -ScriptBlock {
+    param($key, $arg)
+
+    $ast = $null
+    $tokens = $null
+    $errors = $null
+    $cursor = $null
+    [Microsoft.PowerShell.PSConsoleReadLine]::GetBufferState([ref]$ast, [ref]$tokens, [ref]$errors, [ref]$cursor)
+
+    $tokenToChange = $null
+    foreach ($token in $tokens)
+    {
+        $extent = $token.Extent
+        if ($extent.StartOffset -le $cursor -and $extent.EndOffset -ge $cursor)
+        {
+            $tokenToChange = $token
+
+            # If the cursor is at the end (it's really 1 past the end) of the previous token,
+            # we only want to change the previous token if there is no token under the cursor
+            if ($extent.EndOffset -eq $cursor -and $foreach.MoveNext())
+            {
+                $nextToken = $foreach.Current
+                if ($nextToken.Extent.StartOffset -eq $cursor)
+                {
+                    $tokenToChange = $nextToken
+                }
+            }
+            break
+        }
+    }
+
+    if ($tokenToChange -ne $null)
+    {
+        $extent = $tokenToChange.Extent
+        $tokenText = $extent.Text
+        if ($tokenText[0] -eq '"' -and $tokenText[-1] -eq '"')
+        {
+            # Switch to no quotes
+            $replacement = $tokenText.Substring(1, $tokenText.Length - 2)
+        }
+        elseif ($tokenText[0] -eq "'" -and $tokenText[-1] -eq "'")
+        {
+            # Switch to double quotes
+            $replacement = '"' + $tokenText.Substring(1, $tokenText.Length - 2) + '"'
+        }
+        else
+        {
+            # Add single quotes
+            $replacement = "'" + $tokenText + "'"
+        }
+
+        [Microsoft.PowerShell.PSConsoleReadLine]::Replace(
+            $extent.StartOffset,
+            $tokenText.Length,
+            $replacement)
+    }
+}
 
 #Set editor to VSCode or nano if present
 if (Get-Command code -Type Application -ErrorAction SilentlyContinue) {
-    $ENV:EDITOR='code --wait'
+    $ENV:EDITOR = 'code'
 } elseif (Get-Command nano -Type Application -ErrorAction SilentlyContinue) {
-    $ENV:EDITOR='nano'
+    $ENV:EDITOR = 'nano'
 }
 
 Set-PSReadLineKeyHandler -Description 'Edit current directory with Visual Studio Code' -Chord Ctrl+Shift+e -ScriptBlock {
@@ -56,10 +217,10 @@ if (
     (Get-SecretVault $CredentialVaultName -ErrorAction SilentlyContinue)
 ) {
     @{
-        'Publish-Module:NuGetApiKey' = $(Get-Secret -Name 'PSGalleryApiKey' -Vault $CredentialVaultName -asplaintext)
-        'Publish-PSResource:ApiKey' = $(Get-Secret -Name 'PSGalleryApiKey' -Vault $CredentialVaultName -asplaintext)
+        'Publish-Module:NuGetApiKey'    = $(Get-Secret -Name 'PSGalleryApiKey' -Vault $CredentialVaultName -AsPlainText)
+        'Publish-PSResource:ApiKey'     = $(Get-Secret -Name 'PSGalleryApiKey' -Vault $CredentialVaultName -AsPlainText)
         'Connect-PRTGServer:Credential' = $(Get-Secret -Name 'PRTGDefault' -Vault $CredentialVaultName)
-        'Connect-VIServer:Credential' = $(Get-Secret -Name 'VMAdmin' -Vault $CredentialVaultName)
+        'Connect-VIServer:Credential'   = $(Get-Secret -Name 'VMAdmin' -Vault $CredentialVaultName)
     }.GetEnumerator().Foreach{
         $PSDefaultCredentials[$PSItem.Name] = $PSItem.Value
     }
@@ -117,8 +278,8 @@ if ($env:TERM_PROGRAM -eq 'VSCode' -or $env:WT_SESSION) {
 #region ShortHands
 $shortHands = @{
     terraform = 'tf'
-    pulumi = 'pul'
-    kubectl = 'k'
+    pulumi    = 'pul'
+    kubectl   = 'k'
 }
 $shorthands.keys.Foreach{
     if (Get-Command $PSItem -Type Application -ErrorAction SilentlyContinue) {
@@ -134,11 +295,6 @@ function cicommit { git commit --amend --no-edit;git push -f }
 function bounceCode { Get-Process code* | Stop-Process;code }
 
 function debugOn { $GLOBAL:VerbosePreference = 'Continue';$GLOBAL:DebugPreference = 'Continue' }
-
-function testprompt {
-    Import-Module "$HOME\Projects\PowerPrompt\PowerPrompt\PowerPrompt.psd1" -Force
-    Get-PowerPromptDefaultTheme
-}
 
 function Invoke-WebScript {
     param (
@@ -193,7 +349,7 @@ if (Get-Command starship -CommandType Application -ErrorAction SilentlyContinue)
     }
 
     $starshipPrompt = $starshipPrompt -replace 'prompt \{',"prompt { $($replaceShim.ToString())"
-    if ($starshipPrompt -notmatch 'STARSHIP_ENVVAR') {Write-Error 'Starship shimming failed, check $profile'}
+    if ($starshipPrompt -notmatch 'STARSHIP_ENVVAR') { Write-Error 'Starship shimming failed, check $profile' }
 
     . ([ScriptBlock]::create($starshipPrompt))
     if ((Get-Module PSReadline).Version -ge '2.1.0') {
