@@ -29,6 +29,20 @@
         "splitMode": "duplicate"
       },
       "keys": "alt+shift+d"
+    },
+    {
+      "command": {
+        "action": "splitPane",
+        "split": "auto",
+        "splitMode": "duplicate"
+      },
+      "keys": "ctrl+t"
+    },
+    {
+      "command": {
+        "action": "closePane"
+      },
+      "keys": "ctrl+w"
     }
   ],
   "showTerminalTitleInTitlebar": true,
