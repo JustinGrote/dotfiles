@@ -5,4 +5,5 @@
 
 {{ if ne .chezmoi.os "windows" }}
 Documents
+AppData
 {{ end }}
