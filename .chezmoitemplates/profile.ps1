@@ -329,6 +329,16 @@ if ($psversiontable.psversion.major -ge 7) {
     $ErrorView = 'ConciseView'
 }
 
+#Enable new fancy progress bar
+if ($psversiontable.psversion.major -ge '7.2.0') {
+    Enable-ExperimentalFeature PSAnsiProgress,PSAnsiRendering -WarningAction SilentlyContinue
+    #Windows Terminal
+    if ($ENV:WT_SESSION) {
+        $PSStyle.Progress.UseOSCIndicator = $true
+    }
+}
+
+
 #Starship Prompt
 if (Get-Command starship -CommandType Application -ErrorAction SilentlyContinue) {
     #Separate Prompt for vscode. We don't use the profile so this works for both integrated and external terminal modes
