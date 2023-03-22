@@ -1,0 +1,115 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/JanDeDobbeleer/oh-my-posh/main/themes/schema.json
+
+final_space: true
+version: 2
+
+blocks:
+  - type: prompt
+    alignment: left
+
+    segments:
+      - type: session
+        style: powerline
+        background: "#FF5733"
+        template: "{{ if .SSHSession }}\uf817{{ .UserName }}@{{ .HostName }} {{ end }}"
+      - type: path
+        style: plain
+        background: "#333333"
+        template: "{{ .Path }}"
+        properties:
+          home_icon: 🏠
+          style: agnoster_short
+          max_depth: 2
+          mixed_threshold: 2
+          folder_icon: 📂
+          hide_root_location: false
+          mapped_locations_enabled: true
+          mapped_locations:
+            ~: 🏠
+            ~/Projects: 🚧
+            ~/Documents: 📄
+            ~/.config: "⚙️ "
+            ~/.ssh: <gray> </>
+            ~/OneDrive: <blue> </>
+      - type: text
+        style: powerline
+        background: transparent
+        foreground: "#333333"
+        template: 
+      - type: git
+        style: plain
+        background: transparent
+        foreground: lightCyan
+        template: "{{if ne .Env.TERM_PROGRAM \"vscode\"}} {{ .HEAD }}{{if .BranchStatus }} {{ .BranchStatus }}{{ end }}{{ if .Working.Changed }} \uF044 {{ .Working.String }}{{ end }}{{ if and (.Staging.Changed) (.Working.Changed) }} |{{ end }}{{ if .Staging.Changed }} \uF046 {{ .Staging.String }}{{ end }}{{ if gt .StashCount 0}} \uF692 {{ .StashCount }}{{ end }}{{ if gt .WorktreeCount 0}} \uf1bb {{ .WorktreeCount }}{{ end }}{{ end }}"
+  - type: prompt
+    alignment: right
+    segments:
+      - type: node
+        style: diamond
+        foreground: "green"
+        template: "⬢ {{ .Full }} "
+      - type: dotnet
+        style: diamond
+      - type: python
+        style: diamond
+
+      - type: executiontime
+        style: diamond
+        properties:
+          always_enabled: true
+          style: amarillo
+        foreground: "white"
+        background: "#333333"
+        template: "<#333333,transparent>\ue0b6</>羽{{ .FormattedMs }}<#333333,transparent></>"
+  - type: prompt
+    alignment: left
+    newline: true
+    segments:
+      - type: root
+        style: plain
+        foreground: yellow
+        template: ⚡
+      - type: exit
+        style: plain
+        template: ❌
+      - type: shell
+        template: "{{ .Name }}"
+        style: plain
+        properties:
+          mapped_shell_names:
+            pwsh: "" #My default shell
+            powershell: <blue> </>
+            cmd: <black> </>
+            bash: <brown> </>
+            zsh: <green> </>
+            fish: <cyan> </>
+      - type: text
+        style: plain
+        foreground: green
+        template: ❯
+
+valid_line:
+  background: transparent
+  foreground: "#ffffff"
+  template: <green>❯ </>
+
+error_line:
+  background: transparent
+  foreground: "#ffffff"
+  template: <red>❯ </>
+
+secondary_prompt:
+  background: transparent
+  foreground: "#ffffff"
+  template: <cyan>❯ </>
+
+debug_prompt:
+  background: "#FFA500"
+  foreground: transparent
+  template: 🐞<#FFA500, transparent></><green, transparent>❯ </>
+
+# This doesn't work as expected currently and overwrites lines incorrectly
+# transient_prompt:
+#   foreground: "green"
+#   template: "❯ " #Non-blocking space to "clear" the prompt
+#   # template: "<#333333, white></>"

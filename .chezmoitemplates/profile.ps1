@@ -213,7 +213,7 @@ Set-PSReadLineKeyHandler -Description 'Edit current directory with Visual Studio
 #region CredentialDefaults
 $CredentialVaultName = 'PSDefaultCredentials'
 if (
-    (Get-Command Get-Secret -Module 'Microsoft.Powershell.SecretManagement' -ErrorAction SilentlyContinue) -and 
+    (Get-Command Get-Secret -Module 'Microsoft.Powershell.SecretManagement' -ErrorAction SilentlyContinue) -and
     (Get-SecretVault $CredentialVaultName -ErrorAction SilentlyContinue)
 ) {
     @{
@@ -283,7 +283,7 @@ $shortHands = @{
 }
 $shorthands.keys.Foreach{
     if (Get-Command $PSItem -Type Application -ErrorAction SilentlyContinue) {
-        Set-Alias -Name $shortHands.$PSItem -Value $PSItem 
+        Set-Alias -Name $shortHands.$PSItem -Value $PSItem
     }
 }
 #endregion Shorthands
@@ -304,14 +304,6 @@ function Invoke-WebScript {
     Invoke-Expression "& {$(Invoke-WebRequest $uri)} $myargs"
 }
 
-function starshipc {
-    <#
-    .SYNOPSIS
-    Enable starship command autocompletions
-    #>
-    Invoke-Expression ((starship completions powershell) -join "`n")
-}
-
 #endregion Helpers
 
 #region Integrations
@@ -319,7 +311,7 @@ function starshipc {
 #Scoop Fast Search Integration
 if (Get-Command scoop-search -Type Application -ErrorAction SilentlyContinue) { Invoke-Expression (&scoop-search --hook) }
 
-#Force TLS 1.2 for all connections
+#Force TLS 1.2 for all WinPS 5.1 connections
 if ($PSEdition -eq 'Desktop') {
     [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
 }
@@ -336,7 +328,6 @@ if ((Get-Module psreadline).Version -gt 2.1.99 -and (Get-Command 'Enable-AzPredi
 
 #Enable new fancy progress bar
 if ($psversiontable.psversion.major -ge '7.2.0') {
-    Enable-ExperimentalFeature PSAnsiProgress,PSAnsiRendering -WarningAction SilentlyContinue
     #Windows Terminal
     if ($ENV:WT_SESSION) {
         $PSStyle.Progress.UseOSCIndicator = $true
@@ -344,31 +335,10 @@ if ($psversiontable.psversion.major -ge '7.2.0') {
 }
 
 
-#Starship Prompt
-if (Get-Command starship -CommandType Application -ErrorAction SilentlyContinue) {
-    #Separate Prompt for vscode. We don't use the profile so this works for both integrated and external terminal modes
-    if ($ENV:VSCODE_GIT_IPC_HANDLE) {
-        $ENV:STARSHIP_CONFIG = "$HOME\.config\starship-vscode.toml"
-    }
-    #Get Starship Prompt Initializer
-    [string]$starshipPrompt = (& starship init powershell --print-full-init) -join "`n"
-
-    #Kludge: Take a common line and add a suffix to it
-    $stubToReplace = 'prompt {'
-    $replaceShim = {
-        $env:STARSHIP_ENVVAR = if (Test-Path Variable:/PSDebugContext) {
-            "`u{1f41e}"
-        } else {
-            $null
-        }
-    }
-
-    $starshipPrompt = $starshipPrompt -replace 'prompt \{',"prompt { $($replaceShim.ToString())"
-    if ($starshipPrompt -notmatch 'STARSHIP_ENVVAR') { Write-Error 'Starship shimming failed, check $profile' }
-
-    . ([ScriptBlock]::create($starshipPrompt))
-    if ((Get-Module PSReadline).Version -ge '2.1.0') {
-        Set-PSReadLineOption -PromptText "`e[32m❯ ", '❯ '
-    }
+#Oh-My-Posh custom prompt
+try {
+    (@(& oh-my-posh init pwsh --config="$HOME\.config\oh-my-posh\jgrote.omp.yaml" --print) -join "`n") | Invoke-Expression
+} catch [CommandNotFoundException] {
+    Write-Verbose "PROFILE: oh-my-posh not found on this system, skipping prompt"
 }
 #endregion Integrations
