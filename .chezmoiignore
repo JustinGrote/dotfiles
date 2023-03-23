@@ -2,3 +2,7 @@
 Documents
 AppData
 {{ end }}
+
+{{ if eq .chezmoi.os "windows" }}
+Documents
+{{ end }}
