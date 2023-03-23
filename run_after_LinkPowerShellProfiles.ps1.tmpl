@@ -1,3 +1,4 @@
+{{ if eq .chezmoi.os "windows" -}}
 $basePath = Join-Path ([Environment]::GetFolderPath('MyDocuments')) 'PowerShell'
 
 Get-Item $Home/.config/powershell/*profile.ps1 | ForEach-Object {
@@ -8,4 +9,6 @@ Get-Item $Home/.config/powershell/*profile.ps1 | ForEach-Object {
     New-Item -ItemType HardLink -Path $linkPath -Target $_.FullName
   }
 }
-
+{{ else -}}
+#!/bin/sh
+{{ end -}}
