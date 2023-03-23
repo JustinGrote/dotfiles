@@ -348,3 +348,6 @@ try {
     Write-Verbose "PROFILE: oh-my-posh not found on this system, skipping prompt"
 }
 #endregion Integrations
+
+#Alternate PSModulePath for modules installed via ModuleFast
+$env:PSModulePath = "$([environment]::GetFolderPath('LocalApplicationData'))\powershell\Modules" + $([IO.Path]::PathSeparator + $env:PSModulePath)
