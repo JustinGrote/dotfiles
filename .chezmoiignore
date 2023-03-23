@@ -4,7 +4,7 @@ AppData
 {{ end }}
 
 {{ if eq .chezmoi.os "windows" }}
-Documents
 !Documents/PowerShell
-!DOcuments/WindowsPowerShell
+!Documents/WindowsPowerShell
+Documents
 {{ end }}
