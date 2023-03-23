@@ -1,6 +1,5 @@
 {{ if ne .chezmoi.os "windows" }}
 Documents
 AppData
-.config/powershell/Modules
-.config/powershell/Scripts
+run_after_LinkPowerShellProfiles.ps1
 {{ end }}
