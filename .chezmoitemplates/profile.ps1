@@ -337,7 +337,7 @@ if ($psversiontable.psversion.major -ge '7.2.0') {
 
 #Oh-My-Posh custom prompt
 try {
-    (@(& oh-my-posh init pwsh --config="$HOME\.config\oh-my-posh\jgrote.omp.yaml" --print) -join "`n") | Invoke-Expression
+    (@(& oh-my-posh init pwsh --config="$HOME\.config\oh-my-posh\rastan.omp.yaml" --print) -join "`n") | Invoke-Expression
 } catch [CommandNotFoundException] {
     Write-Verbose "PROFILE: oh-my-posh not found on this system, skipping prompt"
 }
