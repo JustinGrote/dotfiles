@@ -2,9 +2,3 @@
 Documents
 AppData
 {{ end }}
-
-{{ if eq .chezmoi.os "windows" }}
-!Documents/PowerShell
-!Documents/WindowsPowerShell
-Documents
-{{ end }}
