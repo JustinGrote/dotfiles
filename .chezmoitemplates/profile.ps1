@@ -321,19 +321,18 @@ if ($psversiontable.psversion.major -ge 7) {
     $ErrorView = 'ConciseView'
 }
 
-#Enable AzPredictor if present
-if ((Get-Module psreadline).Version -gt 2.1.99 -and (Get-Command 'Enable-AzPredictor' -ErrorAction SilentlyContinue)) {
-    Enable-AzPredictor
-}
-
 #Enable new fancy progress bar
-if ($psversiontable.psversion.major -ge '7.2.0') {
+if ($psversiontable.psversion -ge 7) {
     #Windows Terminal
     if ($ENV:WT_SESSION) {
         $PSStyle.Progress.UseOSCIndicator = $true
     }
 }
 
+#Enable AzPredictor if present
+if ((Get-Module psreadline).Version -gt 2.1.99 -and (Get-Command 'Enable-AzPredictor' -ErrorAction SilentlyContinue)) {
+    Enable-AzPredictor
+}
 
 #Oh-My-Posh custom prompt
 try {
