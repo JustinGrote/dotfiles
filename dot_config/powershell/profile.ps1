@@ -35,10 +35,14 @@ Set-PSReadLineOption -HistorySavePath $HistorySavePath
 $PSReadlineVersion = (Get-Module PSReadLine).version
 
 if ($PSReadlineVersion -ge '2.1.0') {
-  Set-PSReadLineOption -PredictionSource History
   Set-PSReadLineKeyHandler -Key UpArrow -Function HistorySearchBackward
   Set-PSReadLineKeyHandler -Key DownArrow -Function HistorySearchForward
   Set-PSReadLineKeyHandler -Key 'Alt+RightArrow' -Function 'AcceptNextSuggestionWord'
+}
+
+#Predictive Intellisense was introduced but not enabled by default for these versions
+if ($PSReadlineVersion -ge '2.1.0' -and $PSReadlineVersion -lt '2.2.6') {
+  Set-PSReadLineOption -PredictionSource History
 }
 
 # Stolen and modified from https://github.com/PowerShell/PSReadLine/blob/master/PSReadLine/SamplePSReadLineProfile.ps1
@@ -125,7 +129,6 @@ Set-PSReadLineKeyHandler -Key 'Alt+(' `
   }
 }
 
-
 # Each time you press Alt+', this key handler will change the token
 # under or before the cursor.  It will cycle through single quotes, double quotes, or
 # no quotes each time it is invoked.
@@ -211,35 +214,49 @@ if (
 }
 #endregion CredentialDefaults
 
-#region VSCodeTheme
-if ($env:TERM_PROGRAM -eq 'VSCode' -or $env:WT_SESSION) {
-  if ($psedition -eq 'core') {
-    $e = "`e"
-  } else {
-    $e = [char]0x1b
-  }
+#region VSCodeDefaultDarkTheme
+#Matches colors to the VSCode Default Dark Theme
+if ($PSStyle) {
+  $FG = $PSStyle.Foreground
+  $Format = $PSStyle.Formatting
 
-  if ($PSEdition -eq 'Core') {
-    Set-PSReadLineOption -Colors @{
-      Command            = "$e[93m"
-      Comment            = "$e[32m"
-      ContinuationPrompt = "$e[37m"
-      Default            = "$e[37m"
-      Emphasis           = "$e[96m"
-      Error              = "$e[31m"
-      Keyword            = "$e[35m"
-      Member             = "$e[96m"
-      Number             = "$e[35m"
-      Operator           = "$e[37m"
-      Parameter          = "$e[37m"
-      Selection          = "$e[37;46m"
-      String             = "$e[33m"
-      Type               = "$e[34m"
-      Variable           = "$e[96m"
-    }
-  }
+  $PSStyle.FileInfo.Directory = $FG.Blue
+  $PSStyle.Progress.View = 'Minimal'
+  $PSStyle.Progress.UseOSCIndicator = $true
+  $DefaultColor = $FG.White
+  $Format.Debug = $FG.Magenta
+  $Format.Verbose = $FG.Cyan
+  $Format.Error = $FG.BrightRed
+  $Format.Warning = $FG.Yellow
+  $Format.FormatAccent = $FG.BrightBlack
+  $Format.TableHeader = $FG.BrightBlack
+  $DarkPlusTypeGreen = "`e[38;2;78;201;176m" #4EC9B0 Dark Plus Type color
+  Set-PSReadLineOption -Colors @{
+    Error     = $Format.Error
+    Keyword   = $FG.Magenta
+    Member    = $FG.BrightCyan
+    Parameter = $FG.BrightCyan
+    Type      = $DarkPlusTypeGreen
+    Variable  = $FG.BrightCyan
+    String    = $FG.Yellow
+    Operator  = $DefaultColor
+    Number    = $FG.BrightGreen
 
-  #Verbose Text should be distinguishable, some hosts set this to yellow
+    # These colors should be standard
+    # Command            = "$e[93m"
+    # Comment            = "$e[32m"
+    # ContinuationPrompt = "$e[37m"
+    # Default            = "$e[37m"
+    # Emphasis           = "$e[96m"
+    # Number             = "$e[35m"
+    # Operator           = "$e[37m"
+    # Selection          = "$e[37;46m"
+
+  }
+} else {
+  #ANSI Escape Character
+  $e = [char]0x1b
+  #This is the legacy way of doing things in PS5.1 before PSStyle was introduced
   $host.PrivateData.DebugBackgroundColor = 'Black'
   $host.PrivateData.DebugForegroundColor = 'Magenta'
   $host.PrivateData.ErrorBackgroundColor = 'Black'
@@ -251,18 +268,25 @@ if ($env:TERM_PROGRAM -eq 'VSCode' -or $env:WT_SESSION) {
   $host.PrivateData.WarningBackgroundColor = 'Black'
   $host.PrivateData.WarningForegroundColor = 'DarkYellow'
 
-  if ($PSStyle) {
-    $PSStyle.Formatting.Debug = $PSStyle.Foreground.Magenta
-    $PSStyle.Formatting.Verbose = $PSStyle.Foreground.Cyan
-    $PSStyle.Formatting.Error = $PSStyle.Foreground.BrightRed
-    $PSStyle.Formatting.Warning = $PSStyle.Foreground.Yellow
-    $PSStyle.FileInfo.Directory = $PSStyle.Foreground.Blue
-    $PSStyle.Progress.View = 'Minimal'
-    $PSStyle.Formatting.FormatAccent = $PSStyle.Foreground.BrightBlack
-    $PSStyle.Formatting.TableHeader = $PSStyle.Foreground.BrightBlack
+  Set-PSReadLineOption -Colors @{
+    Command            = "$e[93m"
+    Comment            = "$e[32m"
+    ContinuationPrompt = "$e[37m"
+    Default            = "$e[37m"
+    Emphasis           = "$e[96m"
+    Error              = "$e[31m"
+    Keyword            = "$e[35m"
+    Member             = "$e[96m"
+    Number             = "$e[35m"
+    Operator           = "$e[37m"
+    Parameter          = "$e[37m"
+    Selection          = "$e[37;46m"
+    String             = "$e[33m"
+    Type               = "$e[34m"
+    Variable           = "$e[96m"
   }
 }
-#endregion VSCodeTheme
+#endregion Theme
 
 [Console]::Title = "PowerShell $($PSVersionTable.PSVersion.Major).$($PSVersionTable.PSVersion.Minor)"
 
