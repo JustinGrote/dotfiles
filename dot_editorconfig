@@ -18,11 +18,11 @@ insert_final_newline = true
 
 # Source code
 [*.{cs,ps1,psd1,psm1}]
-indent_size = 4
+indent_size = 2
 
 # Shell scripts
 [*.sh]
-indent_size = 4
+indent_size = 2
 
 # Xml project files
 [*.{csproj,resx,ps1xml}]
