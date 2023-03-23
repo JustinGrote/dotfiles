@@ -277,14 +277,10 @@ if ($env:TERM_PROGRAM -eq 'VSCode' -or $env:WT_SESSION) {
         $PSStyle.Formatting.FormatAccent = $PSStyle.Foreground.BrightBlack
         $PSStyle.Formatting.TableHeader = $PSStyle.Foreground.BrightBlack
     }
-
-    if ($env:WT_SESSION) {
-        [Console]::Title = ''
-    } else {
-        [Console]::Title = "Powershell $($PSVersionTable.PSVersion.Major)"
-    }
 }
 #endregion VSCodeTheme
+
+[Console]::Title = "PowerShell $($PSVersionTable.PSVersion.Major).$($PSVersionTable.PSVersion.Minor)"
 
 #region ShortHands
 $shortHands = @{
@@ -333,7 +329,7 @@ if ($psversiontable.psversion.major -ge 7) {
 }
 
 #Enable new fancy progress bar
-if ($psversiontable.psversion -ge 7) {
+if ($psversiontable.psversion -ge '7.0.0') {
     #Windows Terminal
     if ($ENV:WT_SESSION) {
         $PSStyle.Progress.UseOSCIndicator = $true
