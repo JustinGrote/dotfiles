@@ -267,6 +267,17 @@ if ($env:TERM_PROGRAM -eq 'VSCode' -or $env:WT_SESSION) {
     $host.PrivateData.WarningBackgroundColor = 'Black'
     $host.PrivateData.WarningForegroundColor = 'DarkYellow'
 
+    if ($PSStyle) {
+        $PSStyle.Formatting.Debug = $PSStyle.Foreground.Magenta
+        $PSStyle.Formatting.Verbose = $PSStyle.Foreground.Cyan
+        $PSStyle.Formatting.Error = $PSStyle.Foreground.BrightRed
+        $PSStyle.Formatting.Warning = $PSStyle.Foreground.Yellow
+        $PSStyle.FileInfo.Directory = $PSStyle.Foreground.Blue
+        $PSStyle.Progress.View = 'Minimal'
+        $PSStyle.Formatting.FormatAccent = $PSStyle.Foreground.BrightBlack
+        $PSStyle.Formatting.TableHeader = $PSStyle.Foreground.BrightBlack
+    }
+
     if ($env:WT_SESSION) {
         [Console]::Title = ''
     } else {
