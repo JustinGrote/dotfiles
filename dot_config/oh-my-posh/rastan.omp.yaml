@@ -6,14 +6,17 @@ version: 2
 blocks:
   - type: prompt
     alignment: left
-
     segments:
       - type: session
-        style: powerline
-        background: "#FF5733"
-        template: "{{ if .SSHSession }}\uf817{{ .UserName }}@{{ .HostName }} {{ end }}"
+        style: diamond
+        leading_diamond: ""
+        background: "#569CD6"
+        foreground: "#333333"
+        template: "{{ if .SSHSession }}🖥️ {{ .UserName }}@{{ .HostName }} {{ end }}"
       - type: path
-        style: plain
+        style: diamond
+        leading_diamond: ""
+        trailing_diamond: 
         background: "#333333"
         template: "{{ .Path }}"
         properties:
@@ -31,11 +34,6 @@ blocks:
             ~/.config: "⚙️ "
             ~/.ssh: <gray> </>
             ~/OneDrive: <blue> </>
-      - type: text
-        style: powerline
-        background: transparent
-        foreground: "#333333"
-        template: 
       - type: git
         style: plain
         background: transparent
