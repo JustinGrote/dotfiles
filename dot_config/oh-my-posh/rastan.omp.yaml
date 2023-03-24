@@ -88,27 +88,21 @@ blocks:
         template: ❯
 
 valid_line:
-  background: transparent
-  foreground: "#ffffff"
-  template: <green>❯ </>
+  foreground: green
+  template: "❯ "
 
 error_line:
-  background: transparent
-  foreground: "#ffffff"
-  template: <red>❯ </>
+  foreground: red
+  template: "❯ "
 
 secondary_prompt:
-  background: transparent
-  foreground: "#ffffff"
-  template: <cyan>❯ </>
+  foreground: cyan
+  template: "❯ "
 
 debug_prompt:
-  background: "#FFA500"
-  foreground: transparent
-  template: 🐞<#FFA500, transparent></><green, transparent>❯ </>
+  template: "<,yellow>🐞</><yellow></><green>❯ </>"
 
-# This doesn't work as expected currently and overwrites lines incorrectly
+# This doesn't work as expected currently with multiline inputs so disabling for now
 # transient_prompt:
-#   foreground: "green"
-#   template: "❯ " #Non-blocking space to "clear" the prompt
-#   # template: "<#333333, white></>"
+#   foreground: green
+#   template: "❯ "
