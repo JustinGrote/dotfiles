@@ -29,63 +29,63 @@ $showPromptCheckpoint = $false
 #endregion Checkpoint
 
 #region EditorStuff
-$HistorySavePath = Join-Path (Split-Path (Get-PSReadLineOption).HistorySavePath) 'history.txt'
-Set-PSReadLineOption -HistorySavePath $HistorySavePath
+# $HistorySavePath = Join-Path (Split-Path (Get-PSReadLineOption).HistorySavePath) 'history.txt'
+# Set-PSReadLineOption -HistorySavePath $HistorySavePath
 
 $PSReadlineVersion = (Get-Module PSReadLine).version
 
-if ($PSReadlineVersion -ge '2.1.0') {
-  Set-PSReadLineKeyHandler -Key UpArrow -Function HistorySearchBackward
-  Set-PSReadLineKeyHandler -Key DownArrow -Function HistorySearchForward
-  Set-PSReadLineKeyHandler -Key 'Alt+RightArrow' -Function 'AcceptNextSuggestionWord'
-}
+# if ($PSReadlineVersion -ge '2.1.0') {
+#   Set-PSReadLineKeyHandler -Key UpArrow -Function HistorySearchBackward
+#   Set-PSReadLineKeyHandler -Key DownArrow -Function HistorySearchForward
+#   Set-PSReadLineKeyHandler -Key 'Alt+RightArrow' -Function 'AcceptNextSuggestionWord'
+# }
 
 #Predictive Intellisense was introduced but not enabled by default for these versions
-if ($PSReadlineVersion -ge '2.1.0' -and $PSReadlineVersion -lt '2.2.6') {
-  Set-PSReadLineOption -PredictionSource History
-}
+# if ($PSReadlineVersion -ge '2.1.0' -and $PSReadlineVersion -lt '2.2.6') {
+#   Set-PSReadLineOption -PredictionSource History
+# }
 
 # Stolen and modified from https://github.com/PowerShell/PSReadLine/blob/master/PSReadLine/SamplePSReadLineProfile.ps1
 # F1 for help on the command line - naturally
-Set-PSReadLineKeyHandler -Key F1 `
-  -BriefDescription CommandHelp `
-  -LongDescription 'Open the help window for the current command' `
-  -ScriptBlock {
-  param($key, $arg)
+# Set-PSReadLineKeyHandler -Key F1 `
+#   -BriefDescription CommandHelp `
+#   -LongDescription 'Open the help window for the current command' `
+#   -ScriptBlock {
+#   param($key, $arg)
 
-  $ast = $null
-  $tokens = $null
-  $errors = $null
-  $cursor = $null
-  [Microsoft.PowerShell.PSConsoleReadLine]::GetBufferState([ref]$ast, [ref]$tokens, [ref]$errors, [ref]$cursor)
+#   $ast = $null
+#   $tokens = $null
+#   $errors = $null
+#   $cursor = $null
+#   [Microsoft.PowerShell.PSConsoleReadLine]::GetBufferState([ref]$ast, [ref]$tokens, [ref]$errors, [ref]$cursor)
 
-  $commandAst = $ast.FindAll( {
-      $node = $args[0]
-      $node -is [CommandAst] -and
-      $node.Extent.StartOffset -le $cursor -and
-      $node.Extent.EndOffset -ge $cursor
-    }, $true) | Select-Object -Last 1
+#   $commandAst = $ast.FindAll( {
+#       $node = $args[0]
+#       $node -is [CommandAst] -and
+#       $node.Extent.StartOffset -le $cursor -and
+#       $node.Extent.EndOffset -ge $cursor
+#     }, $true) | Select-Object -Last 1
 
-  if ($commandAst -ne $null) {
-    $commandName = $commandAst.GetCommandName()
-    if ($commandName -ne $null) {
-      $command = $ExecutionContext.InvokeCommand.GetCommand($commandName, 'All')
-      if ($command -is [Management.Automation.AliasInfo]) {
-        $commandName = $command.ResolvedCommandName
-      }
+#   if ($commandAst -ne $null) {
+#     $commandName = $commandAst.GetCommandName()
+#     if ($commandName -ne $null) {
+#       $command = $ExecutionContext.InvokeCommand.GetCommand($commandName, 'All')
+#       if ($command -is [Management.Automation.AliasInfo]) {
+#         $commandName = $command.ResolvedCommandName
+#       }
 
-      if ($commandName -ne $null) {
-        #First try online
-        try {
-          Get-Help $commandName -Online -ErrorAction Stop
-        } catch [InvalidOperationException] {
-          if ($PSItem -notmatch 'The online version of this Help topic cannot be displayed') { throw }
-          Get-Help $CommandName -ShowWindow
-        }
-      }
-    }
-  }
-}
+#       if ($commandName -ne $null) {
+#         #First try online
+#         try {
+#           Get-Help $commandName -Online -ErrorAction Stop
+#         } catch [InvalidOperationException] {
+#           if ($PSItem -notmatch 'The online version of this Help topic cannot be displayed') { throw }
+#           Get-Help $CommandName -ShowWindow
+#         }
+#       }
+#     }
+#   }
+# }
 
 # Insert text from the clipboard as a here string
 Set-PSReadLineKeyHandler -Key Ctrl+Alt+V `
@@ -107,81 +107,81 @@ Set-PSReadLineKeyHandler -Key Ctrl+Alt+V `
 # Sometimes you want to get a property of invoke a member on what you've entered so far
 # but you need parens to do that.  This binding will help by putting parens around the current selection,
 # or if nothing is selected, the whole line.
-Set-PSReadLineKeyHandler -Key 'Alt+(' `
-  -BriefDescription ParenthesizeSelection `
-  -LongDescription 'Put parenthesis around the selection or entire line and move the cursor to after the closing parenthesis' `
-  -ScriptBlock {
-  param($key, $arg)
+# Set-PSReadLineKeyHandler -Key 'Alt+(' `
+#   -BriefDescription ParenthesizeSelection `
+#   -LongDescription 'Put parenthesis around the selection or entire line and move the cursor to after the closing parenthesis' `
+#   -ScriptBlock {
+#   param($key, $arg)
 
-  $selectionStart = $null
-  $selectionLength = $null
-  [Microsoft.PowerShell.PSConsoleReadLine]::GetSelectionState([ref]$selectionStart, [ref]$selectionLength)
+#   $selectionStart = $null
+#   $selectionLength = $null
+#   [Microsoft.PowerShell.PSConsoleReadLine]::GetSelectionState([ref]$selectionStart, [ref]$selectionLength)
 
-  $line = $null
-  $cursor = $null
-  [Microsoft.PowerShell.PSConsoleReadLine]::GetBufferState([ref]$line, [ref]$cursor)
-  if ($selectionStart -ne -1) {
-    [Microsoft.PowerShell.PSConsoleReadLine]::Replace($selectionStart, $selectionLength, '(' + $line.SubString($selectionStart, $selectionLength) + ')')
-    [Microsoft.PowerShell.PSConsoleReadLine]::SetCursorPosition($selectionStart + $selectionLength + 2)
-  } else {
-    [Microsoft.PowerShell.PSConsoleReadLine]::Replace(0, $line.Length, '(' + $line + ')')
-    [Microsoft.PowerShell.PSConsoleReadLine]::EndOfLine()
-  }
-}
+#   $line = $null
+#   $cursor = $null
+#   [Microsoft.PowerShell.PSConsoleReadLine]::GetBufferState([ref]$line, [ref]$cursor)
+#   if ($selectionStart -ne -1) {
+#     [Microsoft.PowerShell.PSConsoleReadLine]::Replace($selectionStart, $selectionLength, '(' + $line.SubString($selectionStart, $selectionLength) + ')')
+#     [Microsoft.PowerShell.PSConsoleReadLine]::SetCursorPosition($selectionStart + $selectionLength + 2)
+#   } else {
+#     [Microsoft.PowerShell.PSConsoleReadLine]::Replace(0, $line.Length, '(' + $line + ')')
+#     [Microsoft.PowerShell.PSConsoleReadLine]::EndOfLine()
+#   }
+# }
 
-# Each time you press Alt+', this key handler will change the token
-# under or before the cursor.  It will cycle through single quotes, double quotes, or
-# no quotes each time it is invoked.
-Set-PSReadLineKeyHandler -Key "Alt+'" `
-  -BriefDescription ToggleQuoteArgument `
-  -LongDescription 'Toggle quotes on the argument under the cursor' `
-  -ScriptBlock {
-  param($key, $arg)
+# # Each time you press Alt+', this key handler will change the token
+# # under or before the cursor.  It will cycle through single quotes, double quotes, or
+# # no quotes each time it is invoked.
+# Set-PSReadLineKeyHandler -Key "Alt+'" `
+#   -BriefDescription ToggleQuoteArgument `
+#   -LongDescription 'Toggle quotes on the argument under the cursor' `
+#   -ScriptBlock {
+#   param($key, $arg)
 
-  $ast = $null
-  $tokens = $null
-  $errors = $null
-  $cursor = $null
-  [Microsoft.PowerShell.PSConsoleReadLine]::GetBufferState([ref]$ast, [ref]$tokens, [ref]$errors, [ref]$cursor)
+#   $ast = $null
+#   $tokens = $null
+#   $errors = $null
+#   $cursor = $null
+#   [Microsoft.PowerShell.PSConsoleReadLine]::GetBufferState([ref]$ast, [ref]$tokens, [ref]$errors, [ref]$cursor)
 
-  $tokenToChange = $null
-  foreach ($token in $tokens) {
-    $extent = $token.Extent
-    if ($extent.StartOffset -le $cursor -and $extent.EndOffset -ge $cursor) {
-      $tokenToChange = $token
+#   $tokenToChange = $null
+#   foreach ($token in $tokens) {
+#     $extent = $token.Extent
+#     if ($extent.StartOffset -le $cursor -and $extent.EndOffset -ge $cursor) {
+#       $tokenToChange = $token
 
-      # If the cursor is at the end (it's really 1 past the end) of the previous token,
-      # we only want to change the previous token if there is no token under the cursor
-      if ($extent.EndOffset -eq $cursor -and $foreach.MoveNext()) {
-        $nextToken = $foreach.Current
-        if ($nextToken.Extent.StartOffset -eq $cursor) {
-          $tokenToChange = $nextToken
-        }
-      }
-      break
-    }
-  }
+#       # If the cursor is at the end (it's really 1 past the end) of the previous token,
+#       # we only want to change the previous token if there is no token under the cursor
+#       if ($extent.EndOffset -eq $cursor -and $foreach.MoveNext()) {
+#         $nextToken = $foreach.Current
+#         if ($nextToken.Extent.StartOffset -eq $cursor) {
+#           $tokenToChange = $nextToken
+#         }
+#       }
+#       break
+#     }
+#   }
 
-  if ($tokenToChange -ne $null) {
-    $extent = $tokenToChange.Extent
-    $tokenText = $extent.Text
-    if ($tokenText[0] -eq '"' -and $tokenText[-1] -eq '"') {
-      # Switch to no quotes
-      $replacement = $tokenText.Substring(1, $tokenText.Length - 2)
-    } elseif ($tokenText[0] -eq "'" -and $tokenText[-1] -eq "'") {
-      # Switch to double quotes
-      $replacement = '"' + $tokenText.Substring(1, $tokenText.Length - 2) + '"'
-    } else {
-      # Add single quotes
-      $replacement = "'" + $tokenText + "'"
-    }
+#   if ($tokenToChange -ne $null) {
+#     $extent = $tokenToChange.Extent
+#     $tokenText = $extent.Text
+#     if ($tokenText[0] -eq '"' -and $tokenText[-1] -eq '"') {
+#       # Switch to no quotes
+#       $replacement = $tokenText.Substring(1, $tokenText.Length - 2)
+#     } elseif ($tokenText[0] -eq "'" -and $tokenText[-1] -eq "'") {
+#       # Switch to double quotes
+#       $replacement = '"' + $tokenText.Substring(1, $tokenText.Length - 2) + '"'
+#     } else {
+#       # Add single quotes
+#       $replacement = "'" + $tokenText + "'"
+#     }
 
-    [Microsoft.PowerShell.PSConsoleReadLine]::Replace(
-      $extent.StartOffset,
-      $tokenText.Length,
-      $replacement)
-  }
-}
+#     [Microsoft.PowerShell.PSConsoleReadLine]::Replace(
+#       $extent.StartOffset,
+#       $tokenText.Length,
+#       $replacement)
+#   }
+# }
 
 #Set editor to VSCode or nano if present
 if (Get-Command code -Type Application -ErrorAction SilentlyContinue) {
@@ -337,12 +337,12 @@ if ($psversiontable.psversion.major -ge 7) {
 }
 
 #Enable new fancy progress bar
-if ($psversiontable.psversion -ge '7.0.0') {
-  #Windows Terminal
-  if ($ENV:WT_SESSION) {
-    $PSStyle.Progress.UseOSCIndicator = $true
-  }
-}
+# if ($psversiontable.psversion -ge '7.0.0') {
+#   #Windows Terminal
+#   if ($ENV:WT_SESSION) {
+#     $PSStyle.Progress.UseOSCIndicator = $true
+#   }
+# }
 
 #Enable AzPredictor if present
 if ((Get-Module psreadline).Version -gt 2.1.99 -and (Get-Command 'Enable-AzPredictor' -ErrorAction SilentlyContinue)) {
