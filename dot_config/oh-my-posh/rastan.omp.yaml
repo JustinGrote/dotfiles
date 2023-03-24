@@ -9,10 +9,11 @@ blocks:
     segments:
       - type: session
         style: diamond
-        leading_diamond: ""
+        trailing_diamond: 
         background: "#569CD6"
         foreground: "#333333"
-        template: "{{ if .SSHSession }}🖥️ {{ .UserName }}@{{ .HostName }} {{ end }}"
+        #Windows Terminal Doesn't support wide characters, \uf817 is the only nerd font character here that seems to work.
+        template: "{{ if .SSHSession }}\uf817 {{ .UserName }}@{{ .HostName }}{{ end }}"
       - type: path
         style: diamond
         leading_diamond: ""
