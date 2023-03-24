@@ -348,20 +348,21 @@ if ($psversiontable.psversion.major -ge 7) {
 if ((Get-Module psreadline).Version -gt 2.1.99 -and (Get-Command 'Enable-AzPredictor' -ErrorAction SilentlyContinue)) {
   Enable-AzPredictor
 }
+#endregion Integrations
 
-#Oh-My-Posh custom prompt
+#region OhMyPoshPrompt
+#PS5.1 doesnt support multiple join arguments
 try {
-  #PS5.1 doesnt support multiple join arguments
   $configPath = Join-Path "$HOME" '.config/oh-my-posh/rastan.omp.yaml'
   #Weird stuff happens with oh-my-posh if the slashes arent the correct direction on linux, so we use resolve-path to get them correct.
   $config = Resolve-Path $configPath -ErrorAction Stop
-  (@(& oh-my-posh init pwsh --config="$config" --print) -join "`n") | Invoke-Expression
+  & ([ScriptBlock]::Create((& oh-my-posh init pwsh --config="$config" --print)))
 } catch [CommandNotFoundException] {
   Write-Verbose 'PROFILE: oh-my-posh not found on this system, skipping prompt'
 } catch [ItemNotFoundException] {
   Write-Verbose "PROFILE: oh-my-posh configuration $configPath not found on this system, skipping prompt"
 }
-#endregion Integrations
+#endregion OhMyPoshPrompt
 
 #Alternate PSModulePath for modules installed via ModuleFast
 $env:PSModulePath = "$([environment]::GetFolderPath('LocalApplicationData'))\powershell\Modules" + $([IO.Path]::PathSeparator + $env:PSModulePath)
