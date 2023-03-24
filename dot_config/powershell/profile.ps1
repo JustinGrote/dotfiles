@@ -293,7 +293,8 @@ if ($PSStyle) {
   #Short title for Windows Terminal since we have an icon that lets us already know its PowerShell
   "$($PSVersionTable.PSVersion.Major).$($PSVersionTable.PSVersion.Minor)"
 } elseif ($ENV:AZUREPS_HOST_ENVIRONMENT -like 'cloud-shell*') {
-  "$($PSVersionTable.PSVersion.Major).$($PSVersionTable.PSVersion.Minor) $((Get-AzContext).Subscription.Name)"
+  #Best way I found to get the tenant name of where cloud shell is running
+  "$($PSVersionTable.PSVersion.Major).$($PSVersionTable.PSVersion.Minor) $((Get-AzTenant -TenantId (Get-AzSubscription -SubscriptionId (Get-SubscriptionIdFromStorageProfile)).HomeTenantId).Name)"
 } else {
   "PowerShell $($PSVersionTable.PSVersion.Major).$($PSVersionTable.PSVersion.Minor)"
 }
