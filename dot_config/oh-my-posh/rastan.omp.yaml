@@ -59,7 +59,7 @@ blocks:
           style: amarillo
         foreground: "white"
         background: "#333333"
-        template: "<#333333,transparent>\ue0b6</>⏱️{{ .FormattedMs }}<#333333,transparent></>"
+        template: "<#333333,transparent>\ue0b6</>\u23F1 {{ .FormattedMs }}<#333333,transparent></>"
   - type: prompt
     alignment: left
     newline: true
