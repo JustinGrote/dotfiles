@@ -13,11 +13,13 @@ if ($PSEdition -eq 'Desktop') {
   $isMacOS = $false
 }
 
+
+
 #Alternate PSModulePath for modules installed via ModuleFast. Linux already has this as its default module path.
-if ($isWindows) {
-  $localAppDataModulePath = Join-Path ([environment]::GetFolderPath('LocalApplicationData')) '/powershell/Modules'
-  $env:PSModulePath = $localAppDataModulePath + [IO.Path]::PathSeparator + $env:PSModulePath
-}
+# if ($isWindows) {
+#   $localAppDataModulePath = Join-Path ([environment]::GetFolderPath('LocalApplicationData')) '/powershell/Modules'
+#   $env:PSModulePath = $localAppDataModulePath + [IO.Path]::PathSeparator + $env:PSModulePath
+# }
 
 # #region EditorStuff
 # # $HistorySavePath = Join-Path (Split-Path (Get-PSReadLineOption).HistorySavePath) 'history.txt'
@@ -26,7 +28,21 @@ if ($isWindows) {
 $PSReadlineVersion = (Get-Module PSReadLine).version
 
 if ($PSReadlineVersion -ge '2.1.0') {
-  Set-PSReadLineOption -EditMode Windows
+  #Ref: https://learn.microsoft.com/en-us/powershell/module/psreadline/about/about_psreadline?view=powershell-7.4#command-history
+  $historyPath = if ($isWindows) {
+    Join-Path ([Environment]::GetFolderPath('ApplicationData')) 'Microsoft/Windows/PowerShell/PSReadLine'
+  } else {
+    $historyPathBase = if ($env:XDG_DATA_HOME) {
+      $env:XDG_DATA_HOME
+    } else {
+      ([Environment]::GetFolderPath('LocalApplicationData'))
+    }
+
+    Join-Path $historyPathBase 'powershell/PSReadLine'
+  }
+  $historyFilePath = Join-Path $historyPath 'history.txt'
+  Set-PSReadLineOption -HistorySavePath $historyFilePath -EditMode Windows
+
   Set-PSReadLineKeyHandler -Key UpArrow -Function HistorySearchBackward
   Set-PSReadLineKeyHandler -Key DownArrow -Function HistorySearchForward
   Set-PSReadLineKeyHandler -Key 'Alt+RightArrow' -Function 'AcceptNextSuggestionWord'
@@ -321,6 +337,8 @@ function cicommit { git commit --amend --no-edit; git push -f }
 
 function bounceCode { Get-Process code* | Stop-Process; code }
 
+function fixup { git add --all; git commit --all --fixup=$(git rev-parse :/!-fixup\!); git push }
+
 function debugOn { $GLOBAL:VerbosePreference = 'Continue'; $GLOBAL:DebugPreference = 'Continue'; $GLOBAL:InformationPreference = 'Continue' }
 
 function Invoke-WebScript {
@@ -331,12 +349,26 @@ function Invoke-WebScript {
   Invoke-Expression "& {$(Invoke-WebRequest $uri)} $myargs"
 }
 
+function pnpmp ($package) {
+  # Replace invalid file path characters with hypens using GetInvalidFileNameChars
+  $packagePath = $package -replace '[{0}]', '-' -f ([regex]::Escape([string][System.IO.Path]::GetInvalidFileNameChars()))
+  $tempPath = Join-Path $env:TEMP 'pnpm-patch' "$packagePath-$(New-Guid)"
+  $output = & pnpm patch $package --edit-dir $tempPath
+  Write-Verbose "PNPM Patch TempDir: $tempPath"
+  if ($output[0] -notmatch '^You can now edit the following folder: (.+)') {
+    throw "Did not create patch folder successfully: $output"
+  }
+  $path = $matches[1]
+  & code -n --wait $path
+  & pnpm patch-commit $path
+}
+
 #endregion Helpers
 
 #region Integrations
 
 #Scoop Fast Search Integration
-if (Get-Command scoop-search -Type Application -ErrorAction SilentlyContinue) { Invoke-Expression (&scoop-search --hook) }
+if ($IsWindows -and (Get-Command sfsu -Type Application -ErrorAction SilentlyContinue)) { Invoke-Expression (&sfsu hook) }
 
 #Force TLS 1.2 for all WinPS 5.1 connections
 if ($PSEdition -eq 'Desktop') {
@@ -366,3 +398,6 @@ try {
 }
 #endregion OhMyPoshPrompt
 
+
+
+if ("$([environment]::GetFolderPath('LocalApplicationData'))\powershell\Modules" -notin ($env:PSModulePath.split([IO.Path]::PathSeparator))) { $env:PSModulePath = "$([environment]::GetFolderPath('LocalApplicationData'))\powershell\Modules" + $([IO.Path]::PathSeparator + $env:PSModulePath) } <#Added by ModuleFast. DO NOT EDIT THIS LINE. If you do not want this, add -NoProfileUpdate to Install-ModuleFast or add the default destination to your powershell.config.json or to your PSModulePath another way.#>
