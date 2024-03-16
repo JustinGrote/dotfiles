@@ -217,7 +217,7 @@ if (
     'Connect-PRTGServer:Credential' = $(Get-Secret -Name 'PRTGDefault' -Vault $CredentialVaultName)
     'Connect-VIServer:Credential'   = $(Get-Secret -Name 'VMAdmin' -Vault $CredentialVaultName)
   }.GetEnumerator().Foreach{
-    $PSDefaultCredentials[$PSItem.Name] = $PSItem.Value
+    $PSDefaultParameterValues[$PSItem.Name] = $PSItem.Value
   }
 }
 Remove-Variable CredentialVaultName
